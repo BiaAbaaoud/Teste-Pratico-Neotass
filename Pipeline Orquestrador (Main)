@@ -1,0 +1,55 @@
+import logging
+import sys
+from extract import extract_data
+from transform import transform_data
+from load import load_data
+
+# 1. Configuração do Log Estruturado
+# O Log Estruturado substitui o print() e permite que o Airflow/Azure Data Factory
+# monitore o pipeline por NÍVEIS (INFO, WARNING, ERROR, CRITICAL).
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger(__name__)
+
+def main_etl_pipeline():
+    """
+    Função principal que orquestra todas as etapas do ETL modularizado.
+    """
+    logger.info("--- INICIANDO PIPELINE ETL NEOTASS ---")
+    
+    # 1. ETAPA DE EXTRAÇÃO (extract.py)
+    df_oportunidades, df_sellout = extract_data()
+
+    if df_oportunidades is None or df_sellout is None:
+        logger.critical("Extração falhou. Não é possível continuar sem as fontes de dados.")
+        return # Encerra o pipeline
+
+    # 2. ETAPA DE TRANSFORMAÇÃO (transform.py)
+    try:
+        # A Transformação é a etapa mais crítica (CNPJ, Modelagem)
+        transformed_data = transform_data(df_oportunidades, df_sellout)
+        
+        # 3. ETAPA DE LOAD (load.py)
+        load_data(transformed_data)
+        
+    except KeyError as e:
+        # Trata a exceção específica de coluna faltando (KeyError do Levy)
+        logger.error("-" * 50)
+        logger.error(f"ERRO CRÍTICO NA TRANSFORMAÇÃO: Coluna faltando. {e}")
+        logger.error("Avisar fonte de dados. Verifique o nome/capitalização das colunas nas bases originais.")
+        logger.error("-" * 50)
+        
+    except Exception as e:
+        # Trata qualquer outro erro inesperado
+        logger.error(f"ERRO INESPERADO no processamento. Pipeline encerrada: {e}")
+        
+    finally:
+        logger.info("--- FIM DO PIPELINE ETL NEOTASS ---")
+
+if __name__ == "__main__":
+    main_etl_pipeline()
