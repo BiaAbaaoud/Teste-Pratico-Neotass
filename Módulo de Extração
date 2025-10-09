@@ -1,0 +1,35 @@
+import pandas as pd
+import logging
+
+logger = logging.getLogger(__name__)
+
+def extract_data():
+    """
+    Simula a extração de dados brutos (JSON e Parquet).
+    Em produção, se conectaria ao Azure Data Lake Storage.
+    """
+    logger.info("Iniciando Extração de dados brutos.")
+    try:
+        # Mock de dados reais para manter o script rodável
+        data_op = {
+            'ID_OPORTUNIDADE': [1, 2, 3],
+            'CNPJ_PARCEIRO': ['12.345.678/0001-00', '99.999-0001', '12345678901'],
+            'VALOR_ESTIMADO': [1000, 2500, 500],
+            'DATA_OPORTUNIDADE': ['2025-01-01', '2025-01-05', '2025-01-08']
+        }
+        data_so = {
+            'ID_SELLOUT': [101, 102, 103],
+            'CNPJ_CLIENTE': ['12345678000100', '999990001', '12.345.678/0001-00'],
+            'QUANTIDADE': [5, 10, 2],
+            'VALOR_UNITARIO': [200, 250, 150],
+            'DATA_SELLOUT': ['2025-01-02', '2025-01-06', '2025-01-09']
+        }
+        
+        df_oportunidades = pd.DataFrame(data_op)
+        df_sellout = pd.DataFrame(data_so)
+        
+        logger.info(f"Extração concluída. Oportunidades: {len(df_oportunidades)}, Sellout: {len(df_sellout)}")
+        return df_oportunidades, df_sellout
+    except Exception as e:
+        logger.error(f"Erro na extração: {e}")
+        return None, None
