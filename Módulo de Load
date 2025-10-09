@@ -1,0 +1,37 @@
+import pandas as pd
+import logging
+
+logger = logging.getLogger(__name__)
+
+def load_data(transformed_data: dict):
+    """
+    Carrega o Modelo Estrela no destino final.
+    - Na PoC, salva em Excel.
+    - Em Produção (Azure), seria a fase de inserção no Synapse (SQL).
+    """
+    logger.info("Iniciando a Etapa de Load.")
+    
+    # Simulação da inserção no Data Warehouse (estrutura_dimensional.sql)
+    logger.info("Simulando Load no Azure Synapse (tabelas SQL):")
+    
+    # 1. Load: Dimensão Parceiro
+    dim_parceiro = transformed_data['dim_parceiro']
+    logger.info(f"   -> Carregando dim_parceiro: {len(dim_parceiro)} linhas.")
+    
+    # 2. Load: Fato Oportunidade
+    fato_oportunidade = transformed_data['fato_oportunidade']
+    logger.info(f"   -> Carregando fato_oportunidade: {len(fato_oportunidade)} linhas.")
+    
+    # 3. Load: Fato Sellout
+    fato_sellout = transformed_data['fato_sellout']
+    logger.info(f"   -> Carregando fato_sellout: {len(fato_sellout)} linhas.")
+
+    # Ação da Prova de Conceito (O Excel do teste)
+    try:
+        with pd.ExcelWriter('banco_dimensional_neotass_refatorado.xlsx') as writer:
+            dim_parceiro.to_excel(writer, sheet_name='dim_parceiro', index=False)
+            fato_oportunidade.to_excel(writer, sheet_name='fato_oportunidade', index=False)
+            fato_sellout.to_excel(writer, sheet_name='fato_sellout', index=False)
+        logger.info("Load na Prova de Conceito concluído. Arquivo Excel gerado com sucesso.")
+    except Exception as e:
+        logger.error(f"Falha ao gerar o arquivo Excel: {e}")
